@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hub</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --dim: #64748b; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; margin: 0; min-height: 100vh; }
+        
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { font-weight: 300; letter-spacing: 4px; text-transform: uppercase; color: #38bdf8; margin: 0; }
+        .subtitle { font-size: 0.7rem; color: var(--dim); letter-spacing: 2px; margin-top: 5px; }
+
+        .grid { width: 100%; max-width: 400px; display: grid; grid-template-columns: 1fr; gap: 15px; }
+        
+        .app-card { 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: 20px; 
+            text-decoration: none; 
+            color: inherit; 
+            display: flex; 
+            align-items: center; 
+            transition: transform 0.2s, background 0.2s;
+            border-left: 4px solid transparent;
+        }
+        .app-card:active { transform: scale(0.98); background: #334155; }
+        
+        .icon { font-size: 1.5rem; margin-right: 20px; width: 30px; text-align: center; }
+        .details { flex-grow: 1; }
+        .name { font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 2px; }
+        .desc { font-size: 0.75rem; color: var(--dim); }
+
+        /* Specific Colors */
+        .health { border-color: #fb923c; }
+        .day { border-color: #4ade80; }
+        .poop { border-color: #fbbf24; }
+        .mem { border-color: #22d3ee; }
+        .dice { border-color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>DASHBOARD</h1>
+        <div class="subtitle">MINIMALIST SUITE</div>
+    </header>
+
+    <div class="grid">
+        <a href="https://davidkmck.github.io/good-health/" class="app-card health">
+            <div class="icon">🥗</div>
+            <div class="details">
+                <span class="name">Good Health</span>
+                <span class="desc">Diet & Exercise Tracking</span>
+            </div>
+        </a>
+
+        <a href="https://davidkmck.github.io/good-day/" class="app-card day">
+            <div class="icon">☀️</div>
+            <div class="details">
+                <span class="name">Good Day</span>
+                <span class="desc">Daily Mood & Reflection</span>
+            </div>
+        </a>
+
+        <a href="https://davidkmck.github.io/poop-tracker/" class="app-card poop">
+            <div class="icon">💩</div>
+            <div class="details">
+                <span class="name">Poop Tracker</span>
+                <span class="desc">Frequency & Health Heatmap</span>
+            </div>
+        </a>
+
+        <a href="https://davidkmck.github.io/quicklist/" class="app-card mem">
+            <div class="icon">🧠</div>
+            <div class="details">
+                <span class="name">24 Hour Memory</span>
+                <span class="desc">Rolling Task Checklist</span>
+            </div>
+        </a>
+
+        <a href="https://davidkmck.github.io/dice/" class="app-card dice">
+            <div class="icon">🎲</div>
+            <div class="details">
+                <span class="name">Dice</span>
+                <span class="desc">Clean Decision Roller</span>
+            </div>
+        </a>
+    </div>
+
+</body>
+</html>
