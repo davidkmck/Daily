@@ -1,1 +1,21 @@
-
+{
+  "name": "Daily Hub",
+  "short_name": "Daily",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "https://placehold.jp/24/0f172a/f8fafc/192x192.png?text=D",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://placehold.jp/48/0f172a/f8fafc/512x512.png?text=Daily",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
