@@ -3,91 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hub</title>
+    <title>Daily Hub</title>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --dim: #64748b; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; margin: 0; min-height: 100vh; }
-        
-        header { text-align: center; margin-bottom: 40px; }
-        h1 { font-weight: 300; letter-spacing: 4px; text-transform: uppercase; color: #38bdf8; margin: 0; }
-        .subtitle { font-size: 0.7rem; color: var(--dim); letter-spacing: 2px; margin-top: 5px; }
-
-        .grid { width: 100%; max-width: 400px; display: grid; grid-template-columns: 1fr; gap: 15px; }
-        
-        .app-card { 
-            background: var(--card); 
-            padding: 20px; 
-            border-radius: 20px; 
-            text-decoration: none; 
-            color: inherit; 
-            display: flex; 
-            align-items: center; 
-            transition: transform 0.2s, background 0.2s;
-            border-left: 4px solid transparent;
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --accent-health: #10b981;
+            --accent-memory: #22d3ee;
+            --accent-time: #818cf8; /* New Time Accent */
         }
-        .app-card:active { transform: scale(0.98); background: #334155; }
-        
-        .icon { font-size: 1.5rem; margin-right: 20px; width: 30px; text-align: center; }
-        .details { flex-grow: 1; }
-        .name { font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 2px; }
-        .desc { font-size: 0.75rem; color: var(--dim); }
 
-        /* Specific Colors */
-        .health { border-color: #fb923c; }
-        .day { border-color: #4ade80; }
-        .poop { border-color: #fbbf24; }
-        .mem { border-color: #22d3ee; }
-        .rain { border-color: #60a5fa; } /* Blue for Rain */
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 30px 0;
+            color: var(--text);
+            opacity: 0.9;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 25px 15px;
+            border-radius: 24px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s, background 0.2s;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .card:active {
+            transform: scale(0.95);
+            background: #2d3a4f;
+        }
+
+        .icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Specific Accents */
+        .health { border-bottom: 4px solid var(--accent-health); }
+        .memory { border-bottom: 4px solid var(--accent-memory); }
+        .time { border-bottom: 4px solid var(--accent-time); }
+
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>DASHBOARD</h1>
-        <div class="subtitle">MINIMALIST SUITE</div>
-    </header>
+    <h1>Daily</h1>
 
     <div class="grid">
-        <a href="https://davidkmck.github.io/good-health/" class="app-card health">
-            <div class="icon">🥗</div>
-            <div class="details">
-                <span class="name">Good Health</span>
-                <span class="desc">Diet & Exercise Tracking</span>
-            </div>
+        <!-- Health App -->
+        <a href="https://davidkmck.github.io/health/" class="card health">
+            <span class="icon">🥗</span>
+            <span class="card-title">HEALTH</span>
         </a>
 
-        <a href="https://davidkmck.github.io/good-day/" class="app-card day">
-            <div class="icon">☀️</div>
-            <div class="details">
-                <span class="name">Good Day</span>
-                <span class="desc">Daily Mood & Reflection</span>
-            </div>
+        <!-- Memory App -->
+        <a href="https://davidkmck.github.io/quicklist/" class="card memory">
+            <span class="icon">🧠</span>
+            <span class="card-title">MEMORY</span>
         </a>
 
-        <a href="https://davidkmck.github.io/poop-tracker/" class="app-card poop">
-            <div class="icon">💩</div>
-            <div class="details">
-                <span class="name">Poop Tracker</span>
-                <span class="desc">Frequency & Health Heatmap</span>
-            </div>
+        <!-- Time App (New) -->
+        <a href="https://davidkmck.github.io/time/" class="card time">
+            <span class="icon">🕒</span>
+            <span class="card-title">TIME</span>
         </a>
 
-        <a href="https://davidkmck.github.io/quicklist/" class="app-card mem">
-            <div class="icon">🧠</div>
-            <div class="details">
-                <span class="name">24 Hour Memory</span>
-                <span class="desc">Rolling Task Checklist</span>
-            </div>
-        </a>
-
-        <a href="https://davidkmck.github.io/rain/" class="app-card rain">
-            <div class="icon">🌧️</div>
-            <div class="details">
-                <span class="name">Rain</span>
-                <span class="desc">Atmospheric Focus</span>
-            </div>
-        </a>
+        <!-- Placeholder for future apps -->
+        <div class="card" style="opacity: 0.3; border-bottom: 4px solid transparent;">
+            <span class="icon">➕</span>
+            <span class="card-title">SOON</span>
+        </div>
     </div>
 
 </body>
 </html>
+
