@@ -3,80 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily Hub</title>
+    <title>Daily</title>
     <style>
-        :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f8fafc;
-            --accent-health: #10b981;
-            --accent-memory: #22d3ee;
-            --accent-time: #818cf8; /* New Time Accent */
+        :root { 
+            --bg: #0f172a; 
+            --card: #1e293b; 
+            --text: #f8fafc; 
+            --good-day: #fbbf24;  /* Amber */
+            --health: #10b981;    /* Emerald */
+            --memory: #22d3ee;    /* Cyan */
+            --time: #818cf8;      /* Indigo */
+            --rain: #60a5fa;      /* Blue */
+        }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            margin: 0; 
+            min-height: 100vh; 
         }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            margin: 0;
-            min-height: 100vh;
+        h1 { 
+            font-weight: 300; 
+            letter-spacing: 4px; 
+            text-transform: uppercase; 
+            margin: 40px 0; 
+            font-size: 1.2rem;
+            opacity: 0.8;
         }
 
-        h1 {
-            font-weight: 300;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin: 30px 0;
-            color: var(--text);
-            opacity: 0.9;
+        .container { 
+            width: 100%; 
+            max-width: 340px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        .app-link { 
+            background: var(--card); 
+            padding: 18px 20px; 
+            border-radius: 16px; 
+            text-decoration: none; 
+            color: var(--text); 
+            display: flex; 
+            align-items: center; 
             gap: 15px;
-            width: 100%;
-            max-width: 400px;
+            transition: 0.2s;
+            border-left: 5px solid transparent;
         }
 
-        .card {
-            background: var(--card);
-            padding: 25px 15px;
-            border-radius: 24px;
-            text-align: center;
-            text-decoration: none;
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: transform 0.2s, background 0.2s;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
+        .app-link:active { transform: scale(0.98); background: #24334a; }
 
-        .card:active {
-            transform: scale(0.95);
-            background: #2d3a4f;
-        }
+        .icon { font-size: 1.4rem; width: 24px; text-align: center; }
+        .label { font-weight: 600; letter-spacing: 1px; font-size: 0.85rem; }
 
-        .icon {
-            font-size: 2rem;
-            margin-bottom: 12px;
-        }
-
-        .card-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        /* Specific Accents */
-        .health { border-bottom: 4px solid var(--accent-health); }
-        .memory { border-bottom: 4px solid var(--accent-memory); }
-        .time { border-bottom: 4px solid var(--accent-time); }
+        /* Color Coding */
+        .good-day { border-left-color: var(--good-day); }
+        .health { border-left-color: var(--health); }
+        .memory { border-left-color: var(--memory); }
+        .time { border-left-color: var(--time); }
+        .rain { border-left-color: var(--rain); }
 
     </style>
 </head>
@@ -84,32 +76,37 @@
 
     <h1>Daily</h1>
 
-    <div class="grid">
-        <!-- Health App -->
-        <a href="https://davidkmck.github.io/health/" class="card health">
+    <div class="container">
+        <!-- Good Day -->
+        <a href="https://davidkmck.github.io/goodday/" class="app-link good-day">
+            <span class="icon">✨</span>
+            <span class="label">GOOD DAY</span>
+        </a>
+
+        <!-- Good Health -->
+        <a href="https://davidkmck.github.io/health/" class="app-link health">
             <span class="icon">🥗</span>
-            <span class="card-title">HEALTH</span>
+            <span class="label">GOOD HEALTH</span>
         </a>
 
-        <!-- Memory App -->
-        <a href="https://davidkmck.github.io/quicklist/" class="card memory">
+        <!-- 24 Hour Memory -->
+        <a href="https://davidkmck.github.io/quicklist/" class="app-link memory">
             <span class="icon">🧠</span>
-            <span class="card-title">MEMORY</span>
+            <span class="label">24 HOUR MEMORY</span>
         </a>
 
-        <!-- Time App (New) -->
-        <a href="https://davidkmck.github.io/time/" class="card time">
+        <!-- Time -->
+        <a href="https://davidkmck.github.io/time/" class="app-link time">
             <span class="icon">🕒</span>
-            <span class="card-title">TIME</span>
+            <span class="label">TIME</span>
         </a>
 
-        <!-- Placeholder for future apps -->
-        <div class="card" style="opacity: 0.3; border-bottom: 4px solid transparent;">
-            <span class="icon">➕</span>
-            <span class="card-title">SOON</span>
-        </div>
+        <!-- Rain -->
+        <a href="https://davidkmck.github.io/rain/" class="app-link rain">
+            <span class="icon">🌧️</span>
+            <span class="label">RAIN</span>
+        </a>
     </div>
 
 </body>
 </html>
-
