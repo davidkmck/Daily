@@ -4,12 +4,17 @@ const ASSETS = [
   'manifest.json'
 ];
 
+self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Forces the waiting service worker to become the active one
+});
+/*
 // Install the service worker and cache basic files
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
 });
+*/
 
 // Intercept requests to serve from cache if offline
 self.addEventListener('fetch', (e) => {
