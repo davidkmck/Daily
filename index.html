@@ -116,7 +116,10 @@
             <span class="label">RAIN</span>
         </a>
     </div>
-
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+  
 </body>
 </html>
 
