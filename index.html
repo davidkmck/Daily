@@ -1,128 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> 
-    <link rel="manifest" href="manifest.webmanifest?v=2">
-  
- <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Daily</title>
+    
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="1778634001976.png">
+
     <style>
-        :root { 
-            --bg: #0f172a; 
-            --card: #1e293b; 
-            --text: #f8fafc; 
-            --good-day: #fbbf24;    /* Amber */
-            --good-health: #10b981; /* Emerald */
-            --memory: #22d3ee;      /* Cyan */
-            --time: #818cf8;        /* Indigo */
-            --rain: #60a5fa;        /* Blue */
-            --poop: #d97706;        /* Bronze/Earthy */
-        }
-        
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            font-family: sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 20px; 
-            margin: 0; 
-            min-height: 100vh; 
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --nav-bg: #1e293b;
+            --accent: #38bdf8;
+            --nav-height: 75px;
         }
 
-        h1 { 
-            font-weight: 300; 
-            letter-spacing: 4px; 
-            text-transform: uppercase; 
-            margin: 40px 0; 
-            font-size: 1.2rem;
-            opacity: 0.8;
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden; 
         }
 
-        .container { 
-            width: 100%; 
-            max-width: 340px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
+        /* The App Container */
+        #app-viewport {
+            width: 100%;
+            height: calc(100% - var(--nav-height));
+            border: none;
+            display: block;
+            background-color: var(--bg-color);
         }
 
-        .app-link { 
-            background: var(--card); 
-            padding: 18px 20px; 
-            border-radius: 16px; 
-            text-decoration: none; 
-            color: var(--text); 
-            display: flex; 
-            align-items: center; 
-            gap: 15px;
-            transition: 0.2s;
-            border-left: 5px solid transparent;
+        /* Bottom Navigation */
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background-color: var(--nav-bg);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: env(safe-area-inset-bottom); /* Fix for Pixel/iPhone gestures */
+            border-top: 1px solid #334155;
+            box-sizing: border-box;
         }
 
-        .app-link:active { transform: scale(0.98); background: #24334a; }
+        .nav-item {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+            transition: all 0.2s ease;
+        }
 
-        .icon { font-size: 1.4rem; width: 24px; text-align: center; }
-        .label { font-weight: 600; letter-spacing: 1px; font-size: 0.85rem; }
+        .nav-item.active {
+            color: var(--accent);
+        }
 
-        /* Accurate Color Coding */
-        .good-day { border-left-color: var(--good-day); }
-        .good-health { border-left-color: var(--good-health); }
-        .memory { border-left-color: var(--memory); }
-        .time { border-left-color: var(--time); }
-        .rain { border-left-color: var(--rain); }
-        .poop { border-left-color: var(--poop); }
+        .icon {
+            font-size: 22px;
+        }
+
+        /* Hide scrollbars in the iframe */
+        #app-viewport::-webkit-scrollbar {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Daily</h1>
+    <!-- Default app is Good Day -->
+    <iframe id="app-viewport" src="./apps/good-day/index.html" name="app-frame"></iframe>
 
-    <div class="container">
-        <!-- Good Day -->
-        <a href="https://davidkmck.github.io/good-day/" class="app-link good-day">
-            <span class="icon">✨</span>
-            <span class="label">GOOD DAY</span>
-        </a>
-
-        <!-- Good Health -->
-        <a href="https://davidkmck.github.io/good-health/" class="app-link good-health">
-            <span class="icon">🥗</span>
-            <span class="label">GOOD HEALTH</span>
-        </a>
-
-        <!-- 24 Hour Memory -->
-        <a href="https://davidkmck.github.io/quicklist/" class="app-link memory">
-            <span class="icon">🧠</span>
-            <span class="label">24 HOUR MEMORY</span>
-        </a>
-
-        <!-- Time -->
-        <a href="https://davidkmck.github.io/Time/" class="app-link time">
+    <nav>
+        <button class="nav-item active" onclick="loadApp('./apps/good-day/index.html', this)">
+            <span class="icon">☀️</span>
+            <span>Day</span>
+        </button>
+        <button class="nav-item" onclick="loadApp('./apps/good-health/index.html', this)">
+            <span class="icon">⚖️</span>
+            <span>Health</span>
+        </button>
+        <button class="nav-item" onclick="loadApp('./apps/time/index.html', this)">
             <span class="icon">🕒</span>
-            <span class="label">TIME</span>
-        </a>
+            <span>Time</span>
+        </button>
+        <button class="nav-item" onclick="loadApp('./apps/24-hour-memory/index.html', this)">
+            <span class="icon">🧠</span>
+            <span>Memory</span>
+        </button>
+    </nav>
 
-        <!-- Poop Tracker -->
-        <a href="https://davidkmck.github.io/poop-tracker/" class="app-link poop">
-            <span class="icon">💩</span>
-            <span class="label">POOP TRACKER</span>
-        </a>
+    <script>
+        function loadApp(path, element) {
+            const viewport = document.getElementById('app-viewport');
+            
+            // Avoid reloading the same app
+            if (viewport.src.includes(path.replace('./', ''))) return;
 
-        <!-- Rain -->
-        <a href="https://davidkmck.github.io/rain/" class="app-link rain">
-            <span class="icon">🌧️</span>
-            <span class="label">RAIN</span>
-        </a>
-    </div>
+            viewport.src = path;
 
-  <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
-</script>
+            // Update UI Active State
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log("Daily Hub Scope:", reg.scope))
+                .catch(err => console.log("PWA failed:", err));
+            });
+        }
+    </script>
 </body>
 </html>
-
-
