@@ -1,1 +1,120 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>24 Hour Memory</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #22d3ee; --dim: #64748b; --urgent: #f43f5e; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; min-height: 100vh; }
+        h1 { color: var(--accent); font-weight: 300; letter-spacing: 2px; text-transform: uppercase; margin: 20px 0; }
+        
+        .input-container { width: 100%; max-width: 340px; margin-bottom: 20px; display: flex; gap: 10px; }
+        input { flex: 1; background: var(--card); border: 1px solid #334155; border-radius: 12px; padding: 12px; color: white; outline: none; font-size: 1rem; }
+        button.add-btn { background: var(--accent); color: var(--bg); border: none; border-radius: 12px; padding: 12px 20px; font-weight: bold; cursor: pointer; }
+
+        .list { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 10px; }
+        .item { background: var(--card); padding: 15px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent); transition: 0.3s; }
+        .item.urgent { border-left-color: var(--urgent); }
+        
+        .item-content { flex: 1; }
+        .item-text { font-size: 1rem; margin-bottom: 4px; display: block; }
+        .time-left { font-size: 0.65rem; font-weight: bold; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
+        .urgent .time-left { color: var(--urgent); }
+        
+        .actions { display: flex; gap: 15px; align-items: center; margin-left: 10px; }
+        .action-btn { color: var(--dim); background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 5px; transition: color 0.2s; }
+        .refresh-btn:active { color: var(--accent); transform: rotate(45deg); }
+        .delete-btn:active { color: var(--urgent); }
+    </style>
+</head>
+<body>
+
+    <h1>24 Hour Memory</h1>
+
+    <div class="input-container">
+        <input type="text" id="taskInput" placeholder="What would you like to remember?" autocomplete="off">
+        <button class="add-btn" onclick="addItem()">Add</button>
+    </div>
+
+    <div id="taskList" class="list"></div>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('memoryTasks')) || 
+                    JSON.parse(localStorage.getItem('listItems')) || [];
+
+        const input = document.getElementById('taskInput');
+        const list = document.getElementById('taskList');
+
+        function addItem() {
+            const val = input.value.trim();
+            if (!val) return;
+            
+            const newTask = {
+                id: Date.now(),
+                text: val,
+                timestamp: Date.now()
+            };
+
+            tasks.unshift(newTask);
+            input.value = '';
+            saveAndRender();
+        }
+
+        // New function to reset the 24-hour clock
+        function refreshTask(id) {
+            tasks = tasks.map(t => {
+                if (t.id === id) {
+                    return { ...t, timestamp: Date.now() };
+                }
+                return t;
+            });
+            saveAndRender();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveAndRender();
+        }
+
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addItem(); });
+
+        function saveAndRender() {
+            const now = Date.now();
+            const limit = 24 * 60 * 60 * 1000;
+
+            tasks = tasks.filter(t => now - t.timestamp < limit);
+            localStorage.setItem('memoryTasks', JSON.stringify(tasks));
+            
+            list.innerHTML = '';
+            tasks.forEach(task => {
+                const elapsed = now - task.timestamp;
+                const remaining = limit - elapsed;
+                
+                const hours = Math.floor(remaining / (1000 * 60 * 60));
+                const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                
+                const item = document.createElement('div');
+                const isUrgent = hours < 4;
+                item.className = `item ${isUrgent ? 'urgent' : ''}`;
+                
+                item.innerHTML = `
+                    <div class="item-content">
+                        <span class="item-text">${task.text}</span>
+                        <span class="time-left">${hours}h ${mins}m remaining</span>
+                    </div>
+                    <div class="actions">
+                        <button class="action-btn refresh-btn" onclick="refreshTask(${task.id})" title="Reset 24h timer">↻</button>
+                        <button class="action-btn delete-btn" onclick="deleteTask(${task.id})" title="Delete">×</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        setInterval(saveAndRender, 60000);
+        saveAndRender();
+    </script>
+</body>
+</html>
