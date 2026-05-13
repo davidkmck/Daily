@@ -1,1 +1,161 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Good Day</title>
+    <style>
+        :root { 
+            --bg-h: 222; --bg-s: 10%; --bg-l: 5%;
+            --acc-h: 161; --acc-s: 10%; --acc-l: 20%;
+            --bg: hsl(var(--bg-h), var(--bg-s), var(--bg-l));
+            --card: #1e293b; 
+            --accent: hsl(var(--acc-h), var(--acc-s), var(--acc-l));
+            --text: #f8fafc; --dim: #64748b; 
+        }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; min-height: 100vh; transition: all 0.5s ease; overflow-x: hidden; }
+        h1 { color: var(--accent); font-weight: 300; letter-spacing: 2px; text-transform: uppercase; margin: 10px 0; transition: color 0.5s; }
+        
+        .entry-box { background: var(--card); padding: 30px; border-radius: 24px; text-align: center; width: 100%; max-width: 340px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); box-sizing: border-box; }
+        .score-display { font-size: 4rem; font-weight: bold; color: var(--accent); transition: color 0.5s; }
+        #status { font-size: 0.8rem; color: var(--dim); height: 20px; margin-top: -10px; margin-bottom: 5px; }
+        #dateIndicator { font-size: 0.6rem; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+
+        .slider { -webkit-appearance: none; width: 100%; height: 12px; border-radius: 6px; background: #334155; outline: none; margin: 30px 0; }
+        .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 4px solid var(--bg); transition: background 0.5s; }
+        
+        .calendar-container { width: 100%; max-width: 340px; margin-top: 30px; background: var(--card); padding: 15px; border-radius: 20px; box-sizing: border-box; touch-action: pan-y; }
+        .calendar-header { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
+        #monthLabel { font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: var(--text); font-size: 0.8rem; }
+        
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .day-label { font-size: 0.7rem; color: var(--dim); text-align: center; margin-bottom: 5px; }
+        .day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.03); position: relative; cursor: pointer; }
+        .day.selected { border: 2px solid var(--accent); background: rgba(255,255,255,0.1); }
+        .day.today::after { content: ''; position: absolute; bottom: 4px; width: 4px; height: 4px; background: var(--dim); border-radius: 50%; }
+        .day-num { font-size: 0.6rem; color: var(--dim); position: absolute; top: 4px; left: 4px; }
+        .score-val { font-weight: bold; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <h1 id="mainTitle">GOOD DAY</h1>
+
+    <div class="entry-box">
+        <div id="dateIndicator">EDITING TODAY</div>
+        <div id="scoreDisplay" class="score-display">5</div>
+        <div id="status">Adjust to rate</div>
+        <input type="range" min="0" max="10" value="5" class="slider" id="scoreSlider">
+    </div>
+
+    <div class="calendar-container" id="swipeArea">
+        <div class="calendar-header">
+            <span id="monthLabel">MONTH YEAR</span>
+        </div>
+        <div class="grid" id="calendarGrid"></div>
+    </div>
+
+    <script>
+        const getDateKey = (date) => date.toLocaleDateString('en-CA');
+        const slider = document.getElementById('scoreSlider');
+        const display = document.getElementById('scoreDisplay');
+        const mainTitle = document.getElementById('mainTitle');
+        const monthLabel = document.getElementById('monthLabel');
+        const dateIndicator = document.getElementById('dateIndicator');
+        
+        let moodHistory = JSON.parse(localStorage.getItem('moodHistory')) || {};
+        let currentViewDate = new Date();
+        let selectedDate = new Date();
+        const todayKey = getDateKey(new Date());
+
+        function refreshEntryUI() {
+            const key = getDateKey(selectedDate);
+            const val = moodHistory[key] !== undefined ? moodHistory[key] : 5;
+            slider.value = val;
+            display.innerText = val;
+            dateIndicator.innerText = key === todayKey ? "EDITING TODAY" : `EDITING ${key}`;
+            updateColors(val);
+        }
+
+        function updateColors(val) {
+            val = parseInt(val);
+            mainTitle.innerText = val < 5 ? "BAD DAY" : "GOOD DAY";
+            const bgS = 5 + (val * 4); const bgL = 2 + (val * 1.5); 
+            document.documentElement.style.setProperty('--bg-s', `${bgS}%`);
+            document.documentElement.style.setProperty('--bg-l', `${bgL}%`);
+            const accS = 5 + (val * 9); const accL = 15 + (val * 4); 
+            document.documentElement.style.setProperty('--acc-s', `${accS}%`);
+            document.documentElement.style.setProperty('--acc-l', `${accL}%`);
+        }
+
+        slider.addEventListener('input', () => {
+            const val = slider.value;
+            display.innerText = val;
+            updateColors(val);
+            moodHistory[getDateKey(selectedDate)] = parseInt(val);
+            localStorage.setItem('moodHistory', JSON.stringify(moodHistory));
+            document.getElementById('status').innerText = "Saved";
+            renderCalendar();
+        });
+
+        function selectDate(year, month, day) {
+            selectedDate = new Date(year, month, day);
+            refreshEntryUI();
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            ['S','M','T','W','T','F','S'].forEach(d => {
+                const div = document.createElement('div');
+                div.className = 'day-label'; div.innerText = d;
+                grid.appendChild(div);
+            });
+
+            const year = currentViewDate.getFullYear();
+            const month = currentViewDate.getMonth();
+            monthLabel.innerText = currentViewDate.toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day';
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const score = moodHistory[dateStr];
+
+                if (dateStr === todayKey) dayDiv.classList.add('today');
+                if (dateStr === getDateKey(selectedDate)) dayDiv.classList.add('selected');
+                
+                dayDiv.onclick = () => selectDate(year, month, d);
+
+                if (score !== undefined) {
+                    dayDiv.style.background = `hsla(161, ${5 + (score * 8)}%, ${15 + (score * 2)}%, ${score / 15 + 0.15})`;
+                    dayDiv.innerHTML = `<span class="day-num">${d}</span><span class="score-val">${score}</span>`;
+                } else {
+                    dayDiv.innerHTML = `<span class="day-num">${d}</span>`;
+                }
+                grid.appendChild(dayDiv);
+            }
+        }
+
+        let touchstartX = 0; let touchendX = 0;
+        const swipeArea = document.getElementById('swipeArea');
+        swipeArea.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, {passive: true});
+        swipeArea.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); }, {passive: true});
+
+        function handleSwipe() {
+            if (touchendX < touchstartX - 50) { currentViewDate.setMonth(currentViewDate.getMonth() + 1); renderCalendar(); }
+            if (touchendX > touchstartX + 50) { currentViewDate.setMonth(currentViewDate.getMonth() - 1); renderCalendar(); }
+        }
+
+        refreshEntryUI();
+        renderCalendar();
+    </script>
+</body>
+</html>
