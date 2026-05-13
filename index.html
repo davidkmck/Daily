@@ -87,7 +87,7 @@
     <!-- Default app is Good Day -->
     <iframe id="app-viewport" src="./apps/good-day/index.html" name="app-frame"></iframe>
 
-    <nav>
+        <nav>
         <button class="nav-item active" onclick="loadApp('./apps/good-day/index.html', this)">
             <span class="icon">☀️</span>
             <span>Day</span>
@@ -96,13 +96,21 @@
             <span class="icon">⚖️</span>
             <span>Health</span>
         </button>
+        <button class="nav-item" onclick="loadApp('./apps/poop-tracker/index.html', this)">
+            <span class="icon">💩</span>
+            <span>Poop</span>
+        </button>
         <button class="nav-item" onclick="loadApp('./apps/time/index.html', this)">
             <span class="icon">🕒</span>
             <span>Time</span>
         </button>
+        <button class="nav-item" onclick="loadApp('./apps/rain/index.html', this)">
+            <span class="icon">🌧️</span>
+            <span>Rain</span>
+        </button>
         <button class="nav-item" onclick="loadApp('./apps/24-hour-memory/index.html', this)">
             <span class="icon">🧠</span>
-            <span>Memory</span>
+            <span>Mem</span>
         </button>
     </nav>
 
