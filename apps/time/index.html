@@ -1,1 +1,158 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Time</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #818cf8; --dim: #64748b; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; margin: 0; min-height: 100vh; }
+        
+        .clock-container { background: var(--card); padding: 40px 20px; border-radius: 24px; text-align: center; width: 100%; max-width: 340px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); box-sizing: border-box; }
+        .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--dim); margin-bottom: 5px; }
+        
+        .time-row { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; }
+        .main-time { font-size: 3.5rem; font-weight: bold; color: var(--accent); line-height: 1; letter-spacing: -1px; }
+        
+        .ampm-switch { display: flex; gap: 8px; margin-top: 12px; }
+        .dot { font-size: 0.6rem; padding: 4px 12px; border-radius: 20px; background: #334155; color: var(--dim); font-weight: bold; transition: 0.3s; text-transform: uppercase; }
+        .dot.active { background: var(--accent); color: var(--bg); }
+        .sec-dot.active { background: var(--text); color: var(--bg); }
+
+        .secondary-section { border-top: 1px solid #334155; padding-top: 25px; margin-top: 10px; position: relative; }
+        .sec-time-row { display: flex; flex-direction: column; align-items: center; margin-bottom: 15px; min-height: 4.5rem; }
+        .secondary-time { font-size: 2.2rem; font-weight: bold; color: var(--text); line-height: 1; }
+        
+        .input-wrapper { position: relative; width: 85%; margin: 15px auto 0; }
+        input { background: transparent; border: none; border-bottom: 1px solid var(--dim); color: var(--text); text-align: center; font-size: 0.9rem; padding: 8px 25px 8px 5px; outline: none; width: 100%; box-sizing: border-box; }
+        
+        .clear-btn { position: absolute; right: 0; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--dim); font-size: 1.4rem; cursor: pointer; display: none; padding: 5px; line-height: 1; }
+        .clear-btn.visible { display: block; }
+        .date-label { font-size: 0.8rem; color: var(--dim); margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="clock-container">
+        <div class="label">Local Time</div>
+        <div class="time-row">
+            <div id="localTime" class="main-time">--:--:--</div>
+            <div class="ampm-switch">
+                <div id="lAM" class="dot">AM</div>
+                <div id="lPM" class="dot">PM</div>
+            </div>
+        </div>
+        <div id="localDate" class="date-label">---</div>
+
+        <div class="secondary-section">
+            <div id="cityLabel" class="label">Secondary City</div>
+            <div class="sec-time-row">
+                <div id="secondaryTime" class="secondary-time"></div>
+                <div id="sAMPM" class="ampm-switch" style="visibility: hidden;">
+                    <div id="sAM" class="dot sec-dot">AM</div>
+                    <div id="sPM" class="dot sec-dot">PM</div>
+                </div>
+            </div>
+            <div class="input-wrapper">
+                <input type="text" id="cityInput" placeholder="Search City" autocomplete="off">
+                <button id="clearBtn" class="clear-btn">×</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cityInput = document.getElementById('cityInput');
+        const clearBtn = document.getElementById('clearBtn');
+
+        // ZERO BROWSER HELP: We build the numbers from scratch
+        function getRawData(timeZone = null) {
+            const now = new Date();
+            // Use en-GB to guarantee 24-hour format so we can do our own math
+            const options = { 
+                hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                hourCycle: 'h23', 
+                timeZone: timeZone || undefined 
+            };
+            
+            const parts = new Intl.DateTimeFormat('en-GB', options).formatToParts(now);
+            const h24 = parseInt(parts.find(p => p.type === 'hour').value);
+            const min = parts.find(p => p.type === 'minute').value;
+            const sec = parts.find(p => p.type === 'second').value;
+
+            const isPM = h24 >= 12;
+            const h12 = h24 % 12 || 12;
+
+            return {
+                display: `${h12}:${min}:${sec}`,
+                isPM: isPM
+            };
+        }
+
+        function findBestZone(input) {
+            const cleanInput = input.trim().toLowerCase().replace(/\s+/g, '_');
+            if (!cleanInput) return null;
+            const allZones = Intl.supportedValuesOf('timeZone');
+            let match = allZones.find(z => z.split('/').pop().toLowerCase() === cleanInput);
+            if (!match) match = allZones.find(z => z.split('/').pop().toLowerCase().startsWith(cleanInput));
+            if (!match) match = allZones.find(z => z.toLowerCase().includes(cleanInput));
+            return match;
+        }
+
+        function refreshTimes() {
+            const now = new Date();
+            const rawInput = cityInput.value;
+            const cleanedInput = rawInput.trim();
+
+            // Local
+            const local = getRawData();
+            document.getElementById('localTime').innerText = local.display;
+            document.getElementById('lAM').classList.toggle('active', !local.isPM);
+            document.getElementById('lPM').classList.toggle('active', local.isPM);
+            document.getElementById('localDate').innerText = now.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+
+            clearBtn.classList.toggle('visible', rawInput.length > 0);
+
+            if (cleanedInput === "") {
+                document.getElementById('secondaryTime').innerText = "";
+                document.getElementById('sAMPM').style.visibility = "hidden";
+                document.getElementById('cityLabel').innerText = "Secondary City";
+                localStorage.removeItem('secondaryCity');
+                return;
+            }
+
+            const matchedZone = findBestZone(cleanedInput);
+            if (matchedZone) {
+                try {
+                    const sec = getRawData(matchedZone);
+                    document.getElementById('secondaryTime').innerText = sec.display;
+                    document.getElementById('sAMPM').style.visibility = "visible";
+                    document.getElementById('sAM').classList.toggle('active', !sec.isPM);
+                    document.getElementById('sPM').classList.toggle('active', sec.isPM);
+                    document.getElementById('cityLabel').innerText = matchedZone.split('/').pop().replace(/_/g, ' ').toUpperCase();
+                    localStorage.setItem('secondaryCity', cleanedInput);
+                } catch (e) {
+                    document.getElementById('secondaryTime').innerText = "Error";
+                }
+            } else {
+                document.getElementById('secondaryTime').innerText = "--:--:--";
+                document.getElementById('sAMPM').style.visibility = "hidden";
+            }
+        }
+
+        clearBtn.addEventListener('click', () => {
+            cityInput.value = "";
+            localStorage.removeItem('secondaryCity');
+            refreshTimes();
+            cityInput.focus();
+        });
+
+        cityInput.addEventListener('input', refreshTimes);
+        const savedCity = localStorage.getItem('secondaryCity');
+        if (savedCity) cityInput.value = savedCity;
+
+        setInterval(refreshTimes, 1000);
+        refreshTimes();
+    </script>
+</body>
+</html>
