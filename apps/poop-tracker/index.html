@@ -9,7 +9,8 @@
         body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; min-height: 100vh; overflow-x: hidden; }
         h1 { color: var(--accent); font-weight: 300; letter-spacing: 2px; text-transform: uppercase; margin: 20px 0; }
         
-        .entry-box { background: var(--card); padding: 30px; border-radius: 24px; text-align: center; width: 100%; max-width: 340px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); box-sizing: border-box; }
+        .entry-box { background: var(--card); padding: 30px; border-radius: 24px; text-align: center; width: 100%; max-width: 340px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); box-sizing: border-box; transition: border 0.2s ease; border: 1px solid transparent; }
+        .entry-box.editing-past { border-color: #38bdf8; }
         .counter-btn { background: var(--accent); color: var(--bg); border: none; width: 80px; height: 80px; border-radius: 50%; font-size: 2rem; font-weight: bold; cursor: pointer; margin: 20px 0; transition: transform 0.1s; }
         .counter-btn:active { transform: scale(0.9); }
         .count-display { font-size: 3rem; font-weight: bold; margin-bottom: 5px; }
@@ -20,19 +21,25 @@
         
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
         .day-label { font-size: 0.7rem; color: var(--dim); text-align: center; margin-bottom: 5px; }
-        .day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.03); position: relative; }
+        .day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.03); position: relative; cursor: pointer; }
         .day.today { border: 1px solid var(--accent); }
+        .day.selected { border: 2px solid #38bdf8 !important; }
         .day-num { font-size: 0.6rem; color: var(--dim); position: absolute; top: 4px; left: 4px; }
         .score-val { font-weight: bold; font-size: 0.9rem; color: var(--accent); }
+        
+        .label-container { text-align: center; }
+        #dateContextLabel { font-size: 0.8rem; text-transform: uppercase; color: var(--dim); letter-spacing: 0.5px; }
     </style>
 </head>
 <body>
 
     <h1>Poop Tracker</h1>
 
-    <div class="entry-box">
+    <div class="entry-box" id="entryBox">
         <div class="count-display" id="countDisplay">0</div>
-        <div style="color: var(--dim); font-size: 0.8rem; text-transform: uppercase;">Times Today</div>
+        <div class="label-container">
+            <span id="dateContextLabel">Times Today</span>
+        </div>
         <button class="counter-btn" onclick="increment()">+</button>
         <div style="font-size: 0.7rem; color: var(--dim); cursor: pointer;" onclick="decrement()">Oops, remove one</div>
     </div>
@@ -48,26 +55,56 @@
         const getDateKey = (date = new Date()) => date.toLocaleDateString('en-CA');
         const display = document.getElementById('countDisplay');
         const monthLabel = document.getElementById('monthLabel');
+        const dateContextLabel = document.getElementById('dateContextLabel');
+        const entryBox = document.getElementById('entryBox');
         
         let poopHistory = JSON.parse(localStorage.getItem('poopHistory')) || {};
         let currentViewDate = new Date();
         const todayKey = getDateKey();
+        
+        // Track which date the user has physically clicked on
+        let selectedDateKey = todayKey;
+
+        function selectDay(dateStr) {
+            selectedDateKey = dateStr;
+            
+            // UI Visual Feedback context shifts
+            if (selectedDateKey === todayKey) {
+                dateContextLabel.innerText = "Times Today";
+                dateContextLabel.style.color = "var(--dim)";
+                entryBox.classList.remove('editing-past');
+            } else {
+                // Formatting date layout smoothly e.g., "Editing: May 12"
+                const parts = dateStr.split('-');
+                const displayDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                const formatted = displayDate.toLocaleDateString('default', { month: 'short', day: 'numeric' });
+                dateContextLabel.innerText = `Editing: ${formatted}`;
+                dateContextLabel.style.color = "#38bdf8";
+                entryBox.classList.add('editing-past');
+            }
+            
+            saveAndRefresh();
+        }
 
         function increment() {
-            poopHistory[todayKey] = (poopHistory[todayKey] || 0) + 1;
+            poopHistory[selectedDateKey] = (poopHistory[selectedDateKey] || 0) + 1;
             saveAndRefresh();
         }
 
         function decrement() {
-            if (poopHistory[todayKey] > 0) {
-                poopHistory[todayKey] -= 1;
+            if (poopHistory[selectedDateKey] > 0) {
+                poopHistory[selectedDateKey] -= 1;
+                // If count falls to 0, clean up the object key completely
+                if (poopHistory[selectedDateKey] === 0) {
+                    delete poopHistory[selectedDateKey];
+                }
                 saveAndRefresh();
             }
         }
 
         function saveAndRefresh() {
             localStorage.setItem('poopHistory', JSON.stringify(poopHistory));
-            display.innerText = poopHistory[todayKey] || 0;
+            display.innerText = poopHistory[selectedDateKey] || 0;
             renderCalendar();
         }
 
@@ -97,8 +134,12 @@
                 const count = poopHistory[dateStr];
 
                 if (dateStr === todayKey) dayDiv.classList.add('today');
+                if (dateStr === selectedDateKey) dayDiv.classList.add('selected');
+                
+                // Clicking triggers the active focus modification change
+                dayDiv.onclick = () => selectDay(dateStr);
+
                 if (count > 0) {
-                    // Slight opacity increase based on count
                     dayDiv.style.background = `rgba(251, 191, 36, ${Math.min(count * 0.15, 0.6)})`;
                     dayDiv.innerHTML = `<span class="day-num">${d}</span><span class="score-val">${count}</span>`;
                 } else {
@@ -131,7 +172,7 @@
         }
 
         // Init
-        display.innerText = poopHistory[todayKey] || 0;
+        display.innerText = poopHistory[selectedDateKey] || 0;
         renderCalendar();
     </script>
 </body>
