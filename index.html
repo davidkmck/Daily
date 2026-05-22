@@ -202,22 +202,39 @@
     </nav>
 
     <script>
-        function loadApp(path, element) {
-            // Hide the backup container panel if open
-            document.getElementById('backupModal').style.display = 'none';
+function loadApp(path, element) {
+    // Hide the backup container panel if open
+    document.getElementById('backupModal').style.display = 'none';
 
-            const viewport = document.getElementById('app-viewport');
-            
-            // Avoid reloading the same app
-            if (viewport.src.includes(path.replace('./', ''))) return;
+    const viewport = document.getElementById('app-viewport');
+    
+    // Avoid reloading the same app
+    if (viewport.src.includes(path.replace('./', ''))) return;
 
-            viewport.src = path;
+    viewport.src = path;
 
-            // Update UI Active State
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            element.classList.add('active');
+    // --- NEW: Fix for Audio inside Iframes ---
+    // Wait for the sub-app to finish loading, then trigger its play function
+    viewport.onload = function() {
+        try {
+            // If the sub-app has an unlockAudio function, run it!
+            if (viewport.contentWindow && typeof viewport.contentWindow.unlockAudio === 'function') {
+                viewport.contentWindow.unlockAudio();
+            }
+        } catch(e) {
+            // Catches any security/loading hiccups safely
+            console.log("Audio handoff bypassed or unneeded for this app.");
         }
+    };
+    // ----------------------------------------
 
+    // Update UI Active State
+    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+        }
+        
+        
+        
         function toggleBackupView(element) {
             // Display backup utility view interface overlay instead of shifting iframe source location
             document.getElementById('backupModal').style.display = 'flex';
