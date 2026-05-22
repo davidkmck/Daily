@@ -102,9 +102,9 @@
 
     // Mapping dropdown audio filenames to matching, clean hardware track display text
     const audioTrackNames = {
-        './assets/rain-default.mp3': 'Light Rain',
-        './assets/rain-heavy.mp3': 'Thunderstorm',
-        './assets/rain-roof.mp3': 'Tin Roof Rain'
+        'https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg': 'Heavy Rain',
+        'https://actions.google.com/sounds/v1/weather/rain_on_roof.ogg': 'Rain on Roof',
+        'https://actions.google.com/sounds/v1/weather/thunderstorm.ogg': 'Thunderstorm'
     };
 
     function createRain() {
@@ -178,9 +178,8 @@
         rainContainer.style.display = 'block';
         createRain();
 
-        // Feed dropdown source path directly into protected player instance
         player.src = rainSelect.value;
-        player.load(); // Forces the mobile device memory cache to accept data swap
+        player.load(); 
         
         player.play()
             .then(() => {
@@ -200,7 +199,6 @@
         }
     }
 
-    // Hardware Lockscreen integration linkage
     function syncMediaControls() {
         if ('mediaSession' in navigator) {
             const trackUrl = rainSelect.value;
@@ -212,7 +210,6 @@
                 album: 'Atmospheres'
             });
 
-            // Map lockscreen media play/pause state buttons to your app states
             navigator.mediaSession.setActionHandler('play', () => { player.play(); });
             navigator.mediaSession.setActionHandler('pause', () => { player.pause(); });
         }
@@ -223,30 +220,32 @@
         else { stop(); }
     };
 
-    pauseBtn.onclick = pauseResume;
+    pauseBtn.onclick = (e) => {
+        e.stopPropagation(); // Prevents the click from reaching document listeners
+        pauseResume();
+    };
 
-    // Fixes switching track behavior when a track change dropdown occurs
     rainSelect.onchange = () => { 
         if (!player.paused || isPaused) stop(); 
     };
 
     // 2. Main Daily Hub Frame Loading Handoff Integration
     window.unlockAudio = function() {
-        // If app opens up and user clicks or parent pushes wake action, pre-seed default path safely
         if (!player.src) {
             player.src = rainSelect.value;
         }
         
-        // Quietly test and hold authorization context without resetting current track playing positions
-        if (player.paused && btn.innerText === "STOP") {
+        // FIX: Added !isPaused check so background taps don't override an intentional pause
+        if (player.paused && btn.innerText === "STOP" && !isPaused) {
             player.play().then(() => syncMediaControls());
         }
     };
 
-    // Attach passive fallback event targets to ensure normal taps register permission hooks seamlessly
     document.addEventListener('click', window.unlockAudio);
     document.addEventListener('touchstart', window.unlockAudio);
 </script>
+    
+    
     
 </body>
 </html>
