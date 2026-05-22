@@ -82,151 +82,171 @@
         
         <div id="status">Ready</div>
     </div>
+<script>
+    // 1. Core Player Configuration with Mobile Hardware Safety Hooks
+    const player = new Audio();
+    player.loop = true;
+    player.playsInline = true;
+    player.webkitPlaysInline = true;
 
-    <script>
-        const player = new Audio();
-        player.loop = true;
+    const btn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const rainSelect = document.getElementById('rainSelect');
+    const timerSelect = document.getElementById('timerSelect');
+    const status = document.getElementById('status');
+    const rainContainer = document.getElementById('rain-container');
+    
+    let countdownInterval;
+    let secondsRemaining = 0;
+    let isPaused = false;
 
-        const btn = document.getElementById('playBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
-        const rainSelect = document.getElementById('rainSelect');
-        const timerSelect = document.getElementById('timerSelect');
-        const status = document.getElementById('status');
-        const rainContainer = document.getElementById('rain-container');
-        
-        let countdownInterval;
-        let secondsRemaining = 0;
-        let isPaused = false;
+    // Mapping dropdown audio filenames to matching, clean hardware track display text
+    const audioTrackNames = {
+        './assets/rain-default.mp3': 'Light Rain',
+        './assets/rain-heavy.mp3': 'Thunderstorm',
+        './assets/rain-roof.mp3': 'Tin Roof Rain'
+    };
 
-        function createRain() {
-            rainContainer.innerHTML = '';
-            for(let i=0; i<200; i++) {
-                let drop = document.createElement('div');
-                drop.className = 'drop';
-                drop.style.left = Math.random() * 100 + 'vw';
-                drop.style.animationDelay = Math.random() * 1 + 's';
-                drop.style.animationDuration = (0.08 + Math.random() * 0.05) + 's'; 
-                rainContainer.appendChild(drop);
-            }
+    function createRain() {
+        rainContainer.innerHTML = '';
+        for(let i=0; i<200; i++) {
+            let drop = document.createElement('div');
+            drop.className = 'drop';
+            drop.style.left = Math.random() * 100 + 'vw';
+            drop.style.animationDelay = Math.random() * 1 + 's';
+            drop.style.animationDuration = (0.08 + Math.random() * 0.05) + 's'; 
+            rainContainer.appendChild(drop);
         }
+    }
 
-        function updateStatusText() {
-            if (secondsRemaining > 0) {
-                let mins = Math.floor(secondsRemaining / 60);
-                let secs = secondsRemaining % 60;
-                status.innerText = `Ends in: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
-            } else {
-                status.innerText = "Playing Continuous";
-            }
+    function updateStatusText() {
+        if (secondsRemaining > 0) {
+            let mins = Math.floor(secondsRemaining / 60);
+            let secs = secondsRemaining % 60;
+            status.innerText = `Ends in: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        } else {
+            status.innerText = "Playing Continuous";
         }
+    }
 
-        function stop() {
+    function stop() {
+        player.pause();
+        player.currentTime = 0;
+        btn.innerText = "START";
+        btn.classList.remove('active');
+        pauseBtn.style.display = "none";
+        status.innerText = "Ready";
+        rainContainer.style.display = 'none';
+        clearInterval(countdownInterval);
+        secondsRemaining = 0;
+        isPaused = false;
+    }
+
+    function pauseResume() {
+        if (!isPaused) {
+            // PAUSE
             player.pause();
-            player.currentTime = 0;
-            btn.innerText = "START";
-            btn.classList.remove('active');
-            pauseBtn.style.display = "none";
-            status.innerText = "Ready";
+            clearInterval(countdownInterval);
+            pauseBtn.innerText = "RESUME";
+            status.innerText = "Paused: " + status.innerText.replace("Ends in: ", "");
             rainContainer.style.display = 'none';
-            clearInterval(countdownInterval);
-            secondsRemaining = 0;
-            isPaused = false;
-        }
-
-        function pauseResume() {
-            if (!isPaused) {
-                // PAUSE
-                player.pause();
-                clearInterval(countdownInterval);
-                pauseBtn.innerText = "RESUME";
-                status.innerText = "Paused: " + status.innerText.replace("Ends in: ", "");
-                rainContainer.style.display = 'none';
-                isPaused = true;
-            } else {
-                // RESUME
-                player.play();
-                pauseBtn.innerText = "PAUSE";
-                rainContainer.style.display = 'block';
-                if (secondsRemaining > 0) startTimer();
-                isPaused = false;
-            }
-        }
-
-        function startTimer() {
-            clearInterval(countdownInterval);
-            countdownInterval = setInterval(() => {
-                secondsRemaining--;
-                updateStatusText();
-                if (secondsRemaining <= 0) stop();
-            }, 1000);
-        }
-
-        function start() {
-            btn.innerText = "STOP";
-            btn.classList.add('active');
-            pauseBtn.style.display = "block";
+            isPaused = true;
+        } else {
+            // RESUME
+            player.play().then(() => syncMediaControls());
             pauseBtn.innerText = "PAUSE";
             rainContainer.style.display = 'block';
-            createRain();
-
-            player.src = rainSelect.value;
-            player.play();
-
-            const minutes = parseInt(timerSelect.value);
-            if (minutes > 0) {
-                secondsRemaining = minutes * 60;
-                updateStatusText();
-                startTimer();
-            } else {
-                status.innerText = "Playing Continuous";
-            }
+            if (secondsRemaining > 0) startTimer();
+            isPaused = false;
         }
-
-        btn.onclick = () => {
-            if (player.paused && !isPaused) { start(); } 
-            else { stop(); }
-        };
-
-        pauseBtn.onclick = pauseResume;
-
-        rainSelect.onchange = () => { if (!player.paused || isPaused) stop(); };
-
-    // new
-        const rainAudio = new Audio('./assets/rain-default.mp3'); 
-rainAudio.loop = true;
-rainAudio.playsInline = true;
-
-window.unlockAudio = function() {
-    rainAudio.play()
-        .then(() => {
-            console.log("Rain audio initialized.");
-            setupMediaSession(); // <-- Trigger the background protection shield
-        })
-        .catch(error => {
-            console.error("Autoplay engine blocked:", error);
-        });
-};
-
-function setupMediaSession() {
-    // Check if the current browser supports hardware media binding
-    if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: 'Rain Shower',
-            artist: 'Daily Hub',
-            album: 'Ambience'
-        });
-
-        // Map native system lock screen actions back to your script
-        navigator.mediaSession.setActionHandler('play', () => rainAudio.play());
-        navigator.mediaSession.setActionHandler('pause', () => rainAudio.pause());
     }
-}
 
-// Keep backup triggers active
-document.addEventListener('click', window.unlockAudio);
-document.addEventListener('touchstart', window.unlockAudio);
-                
+    function startTimer() {
+        clearInterval(countdownInterval);
+        countdownInterval = setInterval(() => {
+            secondsRemaining--;
+            updateStatusText();
+            if (secondsRemaining <= 0) stop();
+        }, 1000);
+    }
+
+    function start() {
+        btn.innerText = "STOP";
+        btn.classList.add('active');
+        pauseBtn.style.display = "block";
+        pauseBtn.innerText = "PAUSE";
+        rainContainer.style.display = 'block';
+        createRain();
+
+        // Feed dropdown source path directly into protected player instance
+        player.src = rainSelect.value;
+        player.load(); // Forces the mobile device memory cache to accept data swap
+        
+        player.play()
+            .then(() => {
+                syncMediaControls();
+            })
+            .catch(error => {
+                console.error("Audio execution blocked by system settings:", error);
+            });
+
+        const minutes = parseInt(timerSelect.value);
+        if (minutes > 0) {
+            secondsRemaining = minutes * 60;
+            updateStatusText();
+            startTimer();
+        } else {
+            status.innerText = "Playing Continuous";
+        }
+    }
+
+    // Hardware Lockscreen integration linkage
+    function syncMediaControls() {
+        if ('mediaSession' in navigator) {
+            const trackUrl = rainSelect.value;
+            const trackFriendlyName = audioTrackNames[trackUrl] || 'Rain Ambience';
+
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: trackFriendlyName,
+                artist: 'Daily Hub',
+                album: 'Atmospheres'
+            });
+
+            // Map lockscreen media play/pause state buttons to your app states
+            navigator.mediaSession.setActionHandler('play', () => { player.play(); });
+            navigator.mediaSession.setActionHandler('pause', () => { player.pause(); });
+        }
+    }
+
+    btn.onclick = () => {
+        if (player.paused && !isPaused) { start(); } 
+        else { stop(); }
+    };
+
+    pauseBtn.onclick = pauseResume;
+
+    // Fixes switching track behavior when a track change dropdown occurs
+    rainSelect.onchange = () => { 
+        if (!player.paused || isPaused) stop(); 
+    };
+
+    // 2. Main Daily Hub Frame Loading Handoff Integration
+    window.unlockAudio = function() {
+        // If app opens up and user clicks or parent pushes wake action, pre-seed default path safely
+        if (!player.src) {
+            player.src = rainSelect.value;
+        }
+        
+        // Quietly test and hold authorization context without resetting current track playing positions
+        if (player.paused && btn.innerText === "STOP") {
+            player.play().then(() => syncMediaControls());
+        }
+    };
+
+    // Attach passive fallback event targets to ensure normal taps register permission hooks seamlessly
+    document.addEventListener('click', window.unlockAudio);
+    document.addEventListener('touchstart', window.unlockAudio);
+</script>
     
-    </script>
 </body>
 </html>
