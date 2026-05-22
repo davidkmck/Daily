@@ -190,6 +190,43 @@
         pauseBtn.onclick = pauseResume;
 
         rainSelect.onchange = () => { if (!player.paused || isPaused) stop(); };
+
+    // new
+        const rainAudio = new Audio('./assets/rain-default.mp3'); 
+rainAudio.loop = true;
+rainAudio.playsInline = true;
+
+window.unlockAudio = function() {
+    rainAudio.play()
+        .then(() => {
+            console.log("Rain audio initialized.");
+            setupMediaSession(); // <-- Trigger the background protection shield
+        })
+        .catch(error => {
+            console.error("Autoplay engine blocked:", error);
+        });
+};
+
+function setupMediaSession() {
+    // Check if the current browser supports hardware media binding
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: 'Rain Shower',
+            artist: 'Daily Hub',
+            album: 'Ambience'
+        });
+
+        // Map native system lock screen actions back to your script
+        navigator.mediaSession.setActionHandler('play', () => rainAudio.play());
+        navigator.mediaSession.setActionHandler('pause', () => rainAudio.pause());
+    }
+}
+
+// Keep backup triggers active
+document.addEventListener('click', window.unlockAudio);
+document.addEventListener('touchstart', window.unlockAudio);
+                
+    
     </script>
 </body>
 </html>
