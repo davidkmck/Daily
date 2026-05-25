@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +7,7 @@
     <style>
         :root { 
             --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --dim: #64748b;
-            --diet-h: 25; --exer-h: 200;
+            --diet-h: 25; --exer-h: 200; --sleep-h: 270;
             --active-h: var(--diet-h); --active-s: 10%; --active-l: 20%;
             --accent: hsl(var(--active-h), var(--active-s), var(--active-l));
         }
@@ -41,6 +40,7 @@
     <div class="tab-container">
         <div id="tabDiet" class="tab active" onclick="setMode('diet')">Diet</div>
         <div id="tabExer" class="tab" onclick="setMode('exercise')">Exercise</div>
+        <div id="tabSleep" class="tab" onclick="setMode('sleep')">Sleep</div>
     </div>
 
     <h1 id="modeTitle">DIET</h1>
@@ -67,7 +67,11 @@
         const dateIndicator = document.getElementById('dateIndicator');
         
         let mode = 'diet';
-        let healthData = JSON.parse(localStorage.getItem('healthData')) || { diet: {}, exercise: {} };
+        
+        // Ensure sleep exists in parsing to prevent undefined crashes on old data
+        let healthData = JSON.parse(localStorage.getItem('healthData')) || { diet: {}, exercise: {}, sleep: {} };
+        if (!healthData.sleep) healthData.sleep = {}; 
+
         let currentViewDate = new Date();
         let selectedDate = new Date(); // The date we are currently rating
         const todayKey = getDateKey(new Date());
@@ -78,10 +82,19 @@
             8: "Great", 9: "Great", 10: "Excellent"
         };
 
+        const hueMap = {
+            diet: 25,
+            exercise: 200,
+            sleep: 270
+        };
+
         function setMode(newMode) {
             mode = newMode;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(mode === 'diet' ? 'tabDiet' : 'tabExer').classList.add('active');
+            
+            const targetTabId = mode === 'diet' ? 'tabDiet' : (mode === 'exercise' ? 'tabExer' : 'tabSleep');
+            document.getElementById(targetTabId).classList.add('active');
+            
             modeTitle.innerText = mode.toUpperCase();
             refreshEntryUI();
             renderCalendar();
@@ -99,7 +112,7 @@
         function updateColors(val) {
             val = parseInt(val);
             status.innerText = labelMap[val].toUpperCase();
-            const hue = mode === 'diet' ? 25 : 200;
+            const hue = hueMap[mode];
             const bgS = 5 + (val * 4); const bgL = 2 + (val * 1.2); 
             document.body.style.backgroundColor = `hsl(${hue}, ${bgS}%, ${bgL}%)`;
             const accS = 10 + (val * 8); const accL = 20 + (val * 3); 
@@ -153,7 +166,7 @@
                 dayDiv.onclick = () => selectDate(year, month, d);
                 
                 if (score !== undefined) {
-                    const hue = mode === 'diet' ? 25 : 200;
+                    const hue = hueMap[mode];
                     dayDiv.style.background = `hsla(${hue}, ${10 + (score * 8)}%, ${20 + (score * 2)}%, ${score / 15 + 0.15})`;
                     dayDiv.innerHTML = `<span class="day-num">${d}</span><span class="score-val">${score}</span>`;
                 } else {
