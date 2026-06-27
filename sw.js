@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daily-app-v4';
+const CACHE_NAME = 'daily-app-v5';
 const ASSETS = [
   '/',
   '/index.html',
@@ -7,6 +7,7 @@ const ASSETS = [
   '/apps/poop-tracker/index.html',
   '/apps/24-hour-memory/index.html',
   '/icon.png',
+  '/icon-sml.png',
   '/apps/rain/index.html'
   // Add all CSS/JS files for the sub-apps here
 ];
