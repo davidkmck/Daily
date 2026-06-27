@@ -2,7 +2,6 @@ const CACHE_NAME = 'daily-app-v4';
 const ASSETS = [
   '/',
   '/index.html',
-  '/apps/time/index.html',
   '/apps/good-health/index.html',
   '/apps/good-day/index.html',
   '/apps/poop-tracker/index.html',
